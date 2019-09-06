@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
-using System.Net;
 using EmployeeMVC.Models;
 
 namespace EmployeeMVC.Controllers
@@ -105,8 +101,9 @@ namespace EmployeeMVC.Controllers
                 employeeModel.Name = dtEmployee.Rows[0][1].ToString();
                 employeeModel.Position = dtEmployee.Rows[0][2].ToString();
                 employeeModel.Office = dtEmployee.Rows[0][3].ToString();
-                if (!string.IsNullOrEmpty(dtEmployee.Rows[0][4].ToString())) employeeModel.Salary = Convert.ToDouble(dtEmployee.Rows[0][4].ToString());
+                if (!string.IsNullOrEmpty(dtEmployee.Rows[0][4].ToString())) employeeModel.Salary = Convert.ToDecimal(dtEmployee.Rows[0][4].ToString());
                 employeeModel.PicturePath = dtEmployee.Rows[0][5].ToString();
+                
 
                 return View(employeeModel);
             }
