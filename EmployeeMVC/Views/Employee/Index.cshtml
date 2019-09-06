@@ -1,0 +1,57 @@
+﻿@model System.Data.DataTable
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Employees List</h2>
+
+<div class="row">
+    <a href="@Url.Action("Create","Employee")" class="btn btn-success btn-sm">Add Employee</a>
+    
+    <p>
+
+    <table class="table table-striped">
+        <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Office</th>
+            <th>Salary</th>
+            <th>Picture</th>
+            <th></th>  
+        </tr>
+
+        @for (int i = 0; i < Model.Rows.Count; i++)
+        {
+            <tr>
+                <td>@Model.Rows[i][1]</td>
+                <td>@Model.Rows[i][2]</td>
+                <td>@Model.Rows[i][3]</td>
+                <td>@Model.Rows[i][4]</td>
+                <td>
+                    <img src="@Url.Content(Model.Rows[i][5].ToString())" alt="Employee" width="50" height="50" />
+                </td>
+                <td>
+                    <a class='btn btn-default btn-sm' href="@Url.Action("Edit", "Employee", new {@id = Model.Rows[i][0]})">
+                        <i class='fa fa-pencil'></i> Edit
+                    </a>
+
+                    <a class='btn btn-danger btn-sm' href="@Url.Action("Delete", "Employee", new {@id = Model.Rows[i][0]})" onclick="if (!Delete()) { return false; }">
+                        <i class='fa fa-trash'></i> Delete
+                    </a>
+                </td>
+            </tr>
+        }
+    </table>
+
+
+</div>
+
+@section scripts
+{
+    <script>
+        function Delete() {
+            return confirm('Are you sure to Delete this Employee?');
+        }
+    </script>
+}
+
