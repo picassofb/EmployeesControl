@@ -1,0 +1,9 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="EmployeeMVC.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="connectionString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">data source=EDPC\SQLEXPRESS;initial catalog=ActualizaSoftware;user id=sa;password=123456;Integrated Security=true</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

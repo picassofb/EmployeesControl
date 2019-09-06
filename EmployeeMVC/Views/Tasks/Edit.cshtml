@@ -20,7 +20,7 @@
             <div class="form-group">
                 @Html.LabelFor(model => model.EmployeeId, htmlAttributes: new {@class = "col-md-2"})
                 <div class="col-md-10">
-                    @Html.DropDownListFor(model => model.EmployeeId, (IEnumerable<SelectListItem>)ViewData["MyTasks"], new { @class = "form-control" })
+                    @Html.DropDownListFor(model => model.EmployeeId, (IEnumerable<SelectListItem>)ViewData["Employees"], new { @class = "form-control" })
                     @*@Html.EditorFor(model => model.EmployeeId, new {@class = "form-control"})*@
                     @Html.ValidationMessageFor(model => model.EmployeeId, "", new { @class = "text-danger" })
                 </div>

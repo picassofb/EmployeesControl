@@ -3,18 +3,30 @@ using System.Web.Mvc;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Web.Configuration;
 using EmployeeMVC.Models;
 
 namespace EmployeeMVC.Controllers
 {
     public class EmployeeController : Controller
     {
-        private string _connectionString= @"data source=EDPC\SQLEXPRESS;initial catalog=ActualizaSoftware;user id=sa;password=123456;Integrated Security=true";
+        private readonly string _connectionString = WebConfigurationManager.AppSettings["connectionString"];
 
         // GET: Employee
         [HttpGet]
         public ActionResult Index()
         {
+
+            DataTable dtbTasks = new DataTable();
+
+            using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
+            {
+                sqlConnection.Open();
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter("Select * from EmployeeTasks", sqlConnection);
+                sqlDataAdapter.Fill(dtbTasks);
+            }
+
+            ViewData["Tasks"] = dtbTasks;
 
             DataTable dtblEmployees = new DataTable();
 
@@ -101,7 +113,7 @@ namespace EmployeeMVC.Controllers
                 employeeModel.Name = dtEmployee.Rows[0][1].ToString();
                 employeeModel.Position = dtEmployee.Rows[0][2].ToString();
                 employeeModel.Office = dtEmployee.Rows[0][3].ToString();
-                if (!string.IsNullOrEmpty(dtEmployee.Rows[0][4].ToString())) employeeModel.Salary = Convert.ToDecimal(dtEmployee.Rows[0][4].ToString());
+                if (!string.IsNullOrEmpty(dtEmployee.Rows[0][4].ToString())) employeeModel.Salary = Convert.ToInt32(dtEmployee.Rows[0][4].ToString());
                 employeeModel.PicturePath = dtEmployee.Rows[0][5].ToString();
                 
 

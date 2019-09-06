@@ -16,11 +16,11 @@ namespace EmployeeMVC.Models
 
         [Key]
         public int EmployeeId { get; set; }
-        [Required(ErrorMessage = "This field is required."),]
+        [Required(ErrorMessage = "This field is required.")]
         public string Name { get; set; }
         public string Position { get; set; }
         public string Office { get; set; }
-        public decimal Salary { get; set; }
+        public int Salary { get; set; }
 
         [DisplayName("Picture")]
         public string PicturePath { get; set; }

@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.IO;
-using System.Linq;
-using System.Web;
+using System.Web.Configuration;
 using System.Web.Mvc;
 using EmployeeMVC.Models;
 
@@ -12,7 +10,9 @@ namespace EmployeeMVC.Controllers
 {
     public class TasksController : Controller
     {
-        private string _connectionString = @"data source=EDPC\SQLEXPRESS;initial catalog=ActualizaSoftware;user id=sa;password=123456;Integrated Security=true";
+        
+        private readonly string _connectionString = WebConfigurationManager.AppSettings["connectionString"];
+
         // GET: Tasks
         public ActionResult Index()
         {
@@ -51,17 +51,17 @@ namespace EmployeeMVC.Controllers
                 sqlDataAdapter.Fill(dtblTasks);
             }
 
-            List<SelectListItem> myTasks = new List<SelectListItem>();
+            List<SelectListItem> employees = new List<SelectListItem>();
             for (int i = 0; i < dtblTasks.Rows.Count; i++)
             {
-                myTasks.Add(new SelectListItem
+                employees.Add(new SelectListItem
                 {
                     Text = dtblTasks.Rows[i][1].ToString(),
                     Value = dtblTasks.Rows[i][0].ToString(),
                 });
             }
 
-            ViewData["MyTasks"] = myTasks;  
+            ViewData["Employees"] = employees;  
 
             return View(new TasksModel());
         }
@@ -106,10 +106,10 @@ namespace EmployeeMVC.Controllers
                 sqlDataAdapter.Fill(dtblTasks);
             }
 
-            List<SelectListItem> myTasks = new List<SelectListItem>();
+            List<SelectListItem> Employees = new List<SelectListItem>();
             for (int i = 0; i < dtblTasks.Rows.Count; i++)
             {
-                myTasks.Add(new SelectListItem
+                Employees.Add(new SelectListItem
                 {
                     Text = dtblTasks.Rows[i][1].ToString(),
                     Value = dtblTasks.Rows[i][0].ToString(),
@@ -117,7 +117,7 @@ namespace EmployeeMVC.Controllers
                 });
             }
 
-            ViewData["MyTasks"] = myTasks;
+            ViewData["Employees"] = Employees;
 
 
 

@@ -9,9 +9,9 @@
 <h2>Tasks</h2>
 
 <p>
-    @Html.ActionLink("Create New", "Create")
+    @Html.ActionLink("Add Task", "Create",null, new{@class= "btn btn-success btn-sm" })
 </p>
-<table class="table">
+<table class="table table-bordered table-hover">
     <tr>
         <th>
             Employee
@@ -31,9 +31,9 @@
             @Model.Rows[i][3]
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id= @Model.Rows[i][0] }) |
-            @Html.ActionLink("Details", "Details", new { id= @Model.Rows[i][0] }) |
-            @Html.ActionLink("Delete", "Delete", new { id= @Model.Rows[i][0] })
+            @Html.ActionLink("Edit", "Edit", new { id= @Model.Rows[i][0] }, new{@class= "btn btn-info btn-sm" }) 
+            @*@Html.ActionLink("Details", "Details", new { id= @Model.Rows[i][0] }) |
+            @Html.ActionLink("Delete", "Delete", new { id= @Model.Rows[i][0] })*@
         </td>
     </tr>
 }
