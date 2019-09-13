@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Web.Mvc;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Web.Configuration;
 using EmployeeMVC.Models;
 
@@ -11,6 +13,7 @@ namespace EmployeeMVC.Controllers
     public class EmployeeController : Controller
     {
         private readonly string _connectionString = WebConfigurationManager.AppSettings["connectionString"];
+
 
         // GET: Employee
         [HttpGet]
@@ -37,7 +40,7 @@ namespace EmployeeMVC.Controllers
                 sqlDataAdapter.Fill(dtblEmployees);
             }
 
-            return View(dtblEmployees);
+            return View(LoadToEmployeeClass(dtblEmployees));
         }
 
         // GET: Employee/Details/5
@@ -95,7 +98,6 @@ namespace EmployeeMVC.Controllers
         [HttpGet]
         public ActionResult Edit(int id)
         {
-            EmployeeModel employeeModel = new EmployeeModel();
             DataTable dtEmployee = new DataTable();
 
             using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
@@ -109,15 +111,9 @@ namespace EmployeeMVC.Controllers
 
             if (dtEmployee.Rows.Count > 0)
             {
-                employeeModel.EmployeeId = Convert.ToInt32(dtEmployee.Rows[0][0].ToString());
-                employeeModel.Name = dtEmployee.Rows[0][1].ToString();
-                employeeModel.Position = dtEmployee.Rows[0][2].ToString();
-                employeeModel.Office = dtEmployee.Rows[0][3].ToString();
-                if (!string.IsNullOrEmpty(dtEmployee.Rows[0][4].ToString())) employeeModel.Salary = Convert.ToInt32(dtEmployee.Rows[0][4].ToString());
-                employeeModel.PicturePath = dtEmployee.Rows[0][5].ToString();
-                
+                var employeeModel = LoadToEmployeeClass(dtEmployee);
 
-                return View(employeeModel);
+                return View(employeeModel.ElementAt(0));
             }
 
             return RedirectToAction("Index");
@@ -192,6 +188,30 @@ namespace EmployeeMVC.Controllers
             {
                 return View();
             }
+        }
+
+        private static List<EmployeeModel> LoadToEmployeeClass(DataTable dataTable)
+        {
+            var employeeList = new List<EmployeeModel>();
+
+            foreach (DataRow datarow in dataTable.Rows)
+            {
+                var employee = new EmployeeModel
+                {
+                    EmployeeId = Convert.ToInt32(datarow["EmployeeId"].ToString()),
+                    Name = datarow["Name"].ToString(),
+                    Position = datarow["Position"].ToString(),
+                    Office = datarow["Office"].ToString(),
+                    Salary = Convert.ToInt32(datarow["Salary"].ToString()),
+                    PicturePath = datarow["PicturePath"].ToString()
+            };
+                if (!string.IsNullOrEmpty(datarow["Salary"].ToString())) employee.Salary = Convert.ToInt32(datarow["Salary"].ToString());
+                
+
+                employeeList.Add(employee);
+            }
+
+            return employeeList;
         }
     }
 }

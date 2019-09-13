@@ -1,5 +1,7 @@
 ﻿@using System.Data
-@model System.Data.DataTable
+@using EmployeeMVC.Models
+@model IEnumerable<EmployeeMVC.Models.EmployeeModel>
+
 @{
     ViewBag.Title = "Index";
     var tasks = (DataTable) ViewData["Tasks"];
@@ -28,61 +30,64 @@
             <th></th>  
         </tr>
 
-        @for (int i = 0; i < Model.Rows.Count; i++)
+        @foreach(var employee in Model.AsEnumerable())
         {
             <tr valign="middle">
-                <td>@Model.Rows[i][1]</td>
-                <td>@Model.Rows[i][2]</td>
-                <td>@Model.Rows[i][3]</td>
-                <td>@Model.Rows[i][4]</td>
+                
+                <td>@employee.Name</td>
+                <td>@employee.Position</td>
+                <td>@employee.Office</td>
+                <td>@employee.Salary</td>
                 <td>
-                    <img src="@Url.Content(Model.Rows[i][5].ToString())" alt="Employee" width="50" height="50" />
+                    <img src="@Url.Content(employee.PicturePath)" alt="Employee" width="50" height="50"/>
                 </td>
                 <td>
-                    <a class='btn btn-primary btn-sm' href="@Url.Action("Edit", "Employee", new {@id = Model.Rows[i][0]})">
+                    <a class='btn btn-primary btn-sm' href="@Url.Action("Edit", "Employee", new {@id = @employee.EmployeeId})">
                         <i class='fa fa-pencil'></i> Edit
                     </a>
 
-                    <a class='btn btn-danger btn-sm' href="@Url.Action("Delete", "Employee", new {@id = Model.Rows[i][0]})" onclick="if (!Delete()) { return false; }">
+                    <a class='btn btn-danger btn-sm' href="@Url.Action("Delete", "Employee", new {@id = @employee.EmployeeId})" onclick="if (!Delete()) { return false; }">
                         <i class='fa fa-trash'></i> Delete
                     </a>
-                    
-                    <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal-@Model.Rows[i][0]">
+
+                    <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal-@employee.EmployeeId">
                         <i class='fa fa-tasks'></i> Tasks
                     </button>
-                    
+
                     <!-- The Modal -->
-                    <div class="modal" id="myModal-@Model.Rows[i][0]">
+                    <div class="modal" id="myModal-@employee.EmployeeId">
                         <div class="modal-dialog">
                             <div class="modal-content">
-      
+
                                 <!-- Modal Header -->
                                 <div class="modal-header">
-                                    <h4 class="modal-title">@Model.Rows[i][1]</h4>
+                                    <h4 class="modal-title">@employee.Name</h4>
                                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                                 </div>
-        
+
                                 <!-- Modal body -->
                                 <div class="modal-body">
-                                    @foreach (DataRow task in tasks.Rows)
-                                    {
-                                        //Search for the Employee Id
-                                        if (string.Equals(task["EmployeeId"].ToString(), Model.Rows[i][0].ToString()))
+                                    <ul>
+                                        @foreach (DataRow task in tasks.Rows)
                                         {
-                                            <p>@task["TaskDescription"]</p>
+                                            //Search for the Employee Id
+                                            if (string.Equals(task["EmployeeId"].ToString(), employee.EmployeeId.ToString()))
+                                            {
+                                                <li>@task["TaskDescription"]</li>
+                                            }
                                         }
-                                    }
+                                    </ul>
                                 </div>
-        
+
                                 <!-- Modal footer -->
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
                                 </div>
-        
+
                             </div>
                         </div>
                     </div>
-                    
+
 
                 </td>
             </tr>

@@ -63,12 +63,12 @@ namespace EmployeeMVC.Controllers
 
             ViewData["Employees"] = employees;  
 
-            return View(new TasksModel());
+            return View(new TaskModel());
         }
 
         // POST: Tasks/Create
         [HttpPost]
-        public ActionResult Create(TasksModel tasksModel)
+        public ActionResult Create(TaskModel tasksModel)
         {
             try
             {
@@ -106,10 +106,10 @@ namespace EmployeeMVC.Controllers
                 sqlDataAdapter.Fill(dtblTasks);
             }
 
-            List<SelectListItem> Employees = new List<SelectListItem>();
+            List<SelectListItem> employees = new List<SelectListItem>();
             for (int i = 0; i < dtblTasks.Rows.Count; i++)
             {
-                Employees.Add(new SelectListItem
+                employees.Add(new SelectListItem
                 {
                     Text = dtblTasks.Rows[i][1].ToString(),
                     Value = dtblTasks.Rows[i][0].ToString(),
@@ -117,11 +117,11 @@ namespace EmployeeMVC.Controllers
                 });
             }
 
-            ViewData["Employees"] = Employees;
+            ViewData["Employees"] = employees;
 
 
 
-            TasksModel taskModel = new TasksModel();
+            TaskModel taskModel = new TaskModel();
             DataTable dtEmployeeTask = new DataTable();
 
             using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
@@ -147,7 +147,7 @@ namespace EmployeeMVC.Controllers
 
         // POST: Tasks/Edit/5
         [HttpPost]
-        public ActionResult Edit(TasksModel tasksModel)
+        public ActionResult Edit(TaskModel tasksModel)
         {
             using (var sqlConnection = new SqlConnection(_connectionString))
             {
