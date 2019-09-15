@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Web.Mvc;
-using System.Data;
 using System.Data.SqlClient;
 using System.IO;
-using System.Linq;
 using System.Web.Configuration;
 using EmployeeMVC.Models;
+using EmployeeMVC.Repository;
 
 namespace EmployeeMVC.Controllers
 {
@@ -14,33 +12,22 @@ namespace EmployeeMVC.Controllers
     {
         private readonly string _connectionString = WebConfigurationManager.AppSettings["connectionString"];
 
+        private readonly IRepository _repo;
+
+        public EmployeeController()
+        {
+            _repo = new Repository.Repository();
+        }
+
 
         // GET: Employee
         [HttpGet]
         public ActionResult Index()
         {
 
-            DataTable dtbTasks = new DataTable();
+            ViewData["Tasks"] = _repo.GetTasks();
 
-            using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
-            {
-                sqlConnection.Open();
-                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter("Select * from EmployeeTasks", sqlConnection);
-                sqlDataAdapter.Fill(dtbTasks);
-            }
-
-            ViewData["Tasks"] = dtbTasks;
-
-            DataTable dtblEmployees = new DataTable();
-
-            using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
-            {
-                sqlConnection.Open();
-                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter("Select * from Employee", sqlConnection);
-                sqlDataAdapter.Fill(dtblEmployees);
-            }
-
-            return View(LoadToEmployeeClass(dtblEmployees));
+            return View(_repo.GetEmployees());
         }
 
         // GET: Employee/Details/5
@@ -59,61 +46,30 @@ namespace EmployeeMVC.Controllers
 
         // POST: Employee/Create
         [HttpPost]
-        public ActionResult Create(EmployeeModel employeeModel)
+        public ActionResult Create(EmployeeModel employee)
         {
-            try
-            {
-                if (employeeModel.PictureUpload != null)
-                {
-                    var extension = Path.GetExtension(employeeModel.PictureUpload.FileName);
-                    var filename = Guid.NewGuid() + extension;
-                    employeeModel.PicturePath = "~/Files/Images/" + filename;
-                    employeeModel.PictureUpload.SaveAs(Path.Combine(Server.MapPath("~/Files/Images/"), filename));
-                }
+            employee = UploadImage(employee);
 
-                using (var sqlConnection=new SqlConnection(_connectionString))
-                {
-                    sqlConnection.Open();
+            var response = _repo.InsertEmployee(employee);
 
-                    const string query = "INSERT INTO Employee VALUES(@Name,@Position,@Office,@Salary,@PicturePath)";
-                    var sqlCommand = new SqlCommand(query, sqlConnection);
-                    sqlCommand.Parameters.AddWithValue("@Name", employeeModel.Name);
-                    sqlCommand.Parameters.AddWithValue("@Position", employeeModel.Position);
-                    sqlCommand.Parameters.AddWithValue("@Office", employeeModel.Office);
-                    sqlCommand.Parameters.AddWithValue("@Salary", employeeModel.Salary);
-                    sqlCommand.Parameters.AddWithValue("@PicturePath", employeeModel.PicturePath);
-                    sqlCommand.ExecuteNonQuery();
-                }
+            TempData["message"] = response;
 
-                TempData["message"] = "Added successfully!";
-                return RedirectToAction("Index");
-            }
-            catch
-            {
-                return View();
-            }
+            if (response.IsSuccess) return RedirectToAction("Index");
+
+            return View();
+
+
         }
 
         // GET: Employee/Edit/5
         [HttpGet]
         public ActionResult Edit(int id)
         {
-            DataTable dtEmployee = new DataTable();
+            var employee = _repo.GetEmployeeById(id);
 
-            using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
+            if (employee.IsSuccess)
             {
-                sqlConnection.Open();
-                string query = "SELECT * FROM Employee WHERE EmployeeId = @EmployeeId";
-                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(query, sqlConnection);
-                sqlDataAdapter.SelectCommand.Parameters.AddWithValue("@EmployeeId", id);
-                sqlDataAdapter.Fill(dtEmployee);
-            }
-
-            if (dtEmployee.Rows.Count > 0)
-            {
-                var employeeModel = LoadToEmployeeClass(dtEmployee);
-
-                return View(employeeModel.ElementAt(0));
+                return View(employee.Result);
             }
 
             return RedirectToAction("Index");
@@ -123,33 +79,14 @@ namespace EmployeeMVC.Controllers
 
         // POST: Employee/Edit/5
         [HttpPost]
-        public ActionResult Edit(EmployeeModel employeeModel)
+        public ActionResult Edit(EmployeeModel employee)
         {
-            if (employeeModel.PictureUpload != null)
-            {
-                var extension = Path.GetExtension(employeeModel.PictureUpload.FileName);
-                var filename = Guid.NewGuid() + extension;
-                employeeModel.PicturePath = "~/Files/Images/" + filename;
-                employeeModel.PictureUpload.SaveAs(Path.Combine(Server.MapPath("~/Files/Images/"), filename));
-            }
+            employee = UploadImage(employee);
 
-            using (var sqlConnection = new SqlConnection(_connectionString))
-            {
-                sqlConnection.Open();
+            var response = _repo.UpdateEmployee(employee);
 
-                const string query = "UPDATE Employee SET Name=@Name, Position=@Position, Office=@Office, Salary=@Salary, PicturePath=@PicturePath Where EmployeeId=@EmployeeId";
-                var sqlCommand = new SqlCommand(query, sqlConnection);
-                sqlCommand.Parameters.AddWithValue("@Name", employeeModel.Name);
-                sqlCommand.Parameters.AddWithValue("@Position", employeeModel.Position ?? string.Empty);
-                sqlCommand.Parameters.AddWithValue("@Office", employeeModel.Office ?? string.Empty);
-                sqlCommand.Parameters.AddWithValue("@Salary", employeeModel.Salary);
-                sqlCommand.Parameters.AddWithValue("@PicturePath", employeeModel.PicturePath);
-                sqlCommand.Parameters.AddWithValue("@EmployeeId", employeeModel.EmployeeId);
+            TempData["message"] = response;
 
-                sqlCommand.ExecuteNonQuery();
-            }
-
-            TempData["message"] = "Edited successfully!";
             return RedirectToAction("Index");
         }
 
@@ -158,18 +95,9 @@ namespace EmployeeMVC.Controllers
         public ActionResult Delete(int id)
         {
 
-            using (var sqlConnection = new SqlConnection(_connectionString))
-            {
-                sqlConnection.Open();
+            var response = _repo.DeleteEmployee(id);
 
-                const string query = "DELETE FROM Employee Where EmployeeId=@EmployeeId";
-                var sqlCommand = new SqlCommand(query, sqlConnection);
-                sqlCommand.Parameters.AddWithValue("@EmployeeId", id);
-
-                sqlCommand.ExecuteNonQuery();
-            }
-
-
+            TempData["message"] = response;
 
             return RedirectToAction("Index");
         }
@@ -190,28 +118,22 @@ namespace EmployeeMVC.Controllers
             }
         }
 
-        private static List<EmployeeModel> LoadToEmployeeClass(DataTable dataTable)
+
+        #region Private Methods
+
+        private EmployeeModel UploadImage(EmployeeModel employee)
         {
-            var employeeList = new List<EmployeeModel>();
+            if (employee.PictureUpload == null) return employee;
 
-            foreach (DataRow datarow in dataTable.Rows)
-            {
-                var employee = new EmployeeModel
-                {
-                    EmployeeId = Convert.ToInt32(datarow["EmployeeId"].ToString()),
-                    Name = datarow["Name"].ToString(),
-                    Position = datarow["Position"].ToString(),
-                    Office = datarow["Office"].ToString(),
-                    Salary = Convert.ToInt32(datarow["Salary"].ToString()),
-                    PicturePath = datarow["PicturePath"].ToString()
-            };
-                if (!string.IsNullOrEmpty(datarow["Salary"].ToString())) employee.Salary = Convert.ToInt32(datarow["Salary"].ToString());
-                
+            var extension = Path.GetExtension(employee.PictureUpload.FileName);
+            var filename = Guid.NewGuid() + extension;
+            employee.PicturePath = "~/Files/Images/" + filename;
+            employee.PictureUpload.SaveAs(Path.Combine(Server.MapPath("~/Files/Images/"), filename));
 
-                employeeList.Add(employee);
-            }
-
-            return employeeList;
+            return employee;
         }
+
+        #endregion
+
     }
 }

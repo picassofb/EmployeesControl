@@ -21,8 +21,8 @@ namespace EmployeeMVC.Controllers
             using (SqlConnection sqlConnection = new SqlConnection(_connectionString))
             {
                 sqlConnection.Open();
-                var query = " select empT.TaskId, empT.EmployeeId, emp.Name, empT.TaskDescription from EmployeeTasks as empT" +
-                            " inner join Employee as emp on empT.EmployeeId = emp.EmployeeId";
+                const string query = " select empT.TaskId, empT.EmployeeId, emp.Name, empT.TaskDescription from EmployeeTasks as empT" +
+                                     " inner join Employee as emp on empT.EmployeeId = emp.EmployeeId";
 
                 SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(query, sqlConnection);
                 sqlDataAdapter.Fill(dtblTasks);

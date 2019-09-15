@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using EmployeeMVC.Models
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -24,12 +25,15 @@
     </nav>
 
 @{
-    var message = string.Empty;
+    var response = (ResponseModel)TempData["message"];
+    var notifyProperties = new { message = string.Empty, className = string.Empty };
 
-    if (TempData["message"] != null)
+    if (response != null)
     {
-        message = TempData["message"].ToString();
+        notifyProperties = new { message = response.Message, className = response.IsSuccess ? "success" : "error" };
     }
+    
+
 }
 
 
@@ -49,11 +53,12 @@
 @Scripts.Render("~/bundles/bootstrap")
 @Scripts.Render("~/bundles/notify")
 @RenderSection("scripts", required: false)
+
 <script src="~/Scripts/Script.js"></script>
 
 <script>
     $(document).ready(function() {
-        $.notify("@message", "success");
+        $.notify("@notifyProperties.message", "@notifyProperties.className");
     });
 </script>
 

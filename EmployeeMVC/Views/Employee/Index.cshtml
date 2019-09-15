@@ -1,10 +1,10 @@
 ﻿@using System.Data
 @using EmployeeMVC.Models
-@model IEnumerable<EmployeeMVC.Models.EmployeeModel>
+@model List<EmployeeModel>
 
 @{
     ViewBag.Title = "Index";
-    var tasks = (DataTable) ViewData["Tasks"];
+    var tasks = (List<TaskModel>)ViewData["Tasks"];
 }
 
 <br /><br />
@@ -30,7 +30,7 @@
             <th></th>  
         </tr>
 
-        @foreach(var employee in Model.AsEnumerable())
+        @foreach(var employee in Model)
         {
             <tr valign="middle">
                 
@@ -68,12 +68,12 @@
                                 <!-- Modal body -->
                                 <div class="modal-body">
                                     <ul>
-                                        @foreach (DataRow task in tasks.Rows)
+                                        @foreach (var task in tasks)
                                         {
                                             //Search for the Employee Id
-                                            if (string.Equals(task["EmployeeId"].ToString(), employee.EmployeeId.ToString()))
+                                            if (Equals(task.EmployeeId, employee.EmployeeId))
                                             {
-                                                <li>@task["TaskDescription"]</li>
+                                                <li>@task.TaskDescription</li>
                                             }
                                         }
                                     </ul>
