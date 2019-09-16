@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Web.Configuration;
+﻿using System.Collections.Generic;
 using System.Web.Mvc;
 using EmployeeMVC.Models;
 using EmployeeMVC.Repository;
@@ -11,7 +7,6 @@ namespace EmployeeMVC.Controllers
 {
     public class TasksController : Controller
     {
-        private readonly string _connectionString = WebConfigurationManager.AppSettings["connectionString"];
 
         private readonly IRepository _repo;
 
