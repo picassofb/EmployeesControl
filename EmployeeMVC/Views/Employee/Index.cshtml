@@ -4,7 +4,6 @@
 
 @{
     ViewBag.Title = "Index";
-    var tasks = (List<TaskModel>)ViewData["Tasks"];
 }
 
 <br /><br />
@@ -68,13 +67,9 @@
                                 <!-- Modal body -->
                                 <div class="modal-body">
                                     <ul>
-                                        @foreach (var task in tasks)
+                                        @foreach (var task in employee.Tasks)
                                         {
-                                            //Search for the Employee Id
-                                            if (Equals(task.EmployeeId, employee.EmployeeId))
-                                            {
-                                                <li>@task.TaskDescription</li>
-                                            }
+                                            <li>@task.TaskDescription</li>
                                         }
                                     </ul>
                                 </div>

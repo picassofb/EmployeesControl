@@ -24,9 +24,6 @@ namespace EmployeeMVC.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-
-            ViewData["Tasks"] = _repo.GetTasks();
-
             return View(_repo.GetEmployees());
         }
 

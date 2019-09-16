@@ -1,8 +1,19 @@
 ﻿@using EmployeeMVC.Models
+
+@{
+    var response = (ResponseModel)TempData["message"];
+    var notifyProperties = new { message = string.Empty, className = string.Empty };
+
+    if (response != null)
+    {
+        notifyProperties = new { message = response.Message, className = response.IsSuccess ? "success" : "error" };
+    }
+}
+
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - Employees Control</title>
@@ -19,48 +30,33 @@
             <li><a class="nav-link" href="@Url.Action("Index","Employee")">Employees</a></li>
             <li><a class="nav-link" href="@Url.Action("Index","Tasks")">Tasks</a></li>
         </ul>
-
-        @*<a class="btn btn-primary btn-lg" href="@Url.Action("Index","Employee")">Employees</a>
-        <a class="btn btn-primary btn-lg" href="@Url.Action("Index","Tasks")">Tasks</a>*@
     </nav>
 
-@{
-    var response = (ResponseModel)TempData["message"];
-    var notifyProperties = new { message = string.Empty, className = string.Empty };
 
-    if (response != null)
-    {
-        notifyProperties = new { message = response.Message, className = response.IsSuccess ? "success" : "error" };
-    }
-    
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
 
-}
-
-
-<div class="container body-content">
-    @RenderBody()
-    <hr/>
-    
-    <footer>
-        <p>&copy; @DateTime.Now.Year - Eduardo Salazar</p>
-    </footer>
-</div>
-    
+        <footer>
+            <p>&copy; @DateTime.Now.Year - Eduardo Salazar</p>
+        </footer>
+    </div>
 
 
 
-@Scripts.Render("~/bundles/jquery")
-@Scripts.Render("~/bundles/bootstrap")
-@Scripts.Render("~/bundles/notify")
-@RenderSection("scripts", required: false)
 
-<script src="~/Scripts/Script.js"></script>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/notify")
+    @RenderSection("scripts", required: false)
 
-<script>
+    <script src="~/Scripts/Script.js"></script>
+
+    <script>
     $(document).ready(function() {
         $.notify("@notifyProperties.message", "@notifyProperties.className");
     });
-</script>
+    </script>
 
 
 </body>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Reflection;
 using System.Web.Configuration;
 using EmployeeMVC.Models;
 
@@ -25,14 +26,14 @@ namespace EmployeeMVC.Repository
                     const string query = "INSERT INTO Employee VALUES(@Name,@Position,@Office,@Salary,@PicturePath)";
                     var sqlCommand = new SqlCommand(query, sqlConnection);
                     sqlCommand.Parameters.AddWithValue("@Name", employee.Name);
-                    sqlCommand.Parameters.AddWithValue("@Position", employee.Position);
-                    sqlCommand.Parameters.AddWithValue("@Office", employee.Office);
-                    sqlCommand.Parameters.AddWithValue("@Salary", employee.Salary);
+                    sqlCommand.Parameters.AddWithValue("@Position", employee.Position ?? string.Empty);
+                    sqlCommand.Parameters.AddWithValue("@Office", employee.Office ?? string.Empty);
+                    sqlCommand.Parameters.AddWithValue("@Salary", employee.Salary ?? 0);
                     sqlCommand.Parameters.AddWithValue("@PicturePath", employee.PicturePath);
                     sqlCommand.ExecuteNonQuery();
                 }
 
-                return new ResponseModel{IsSuccess = true, Message = "Employee added successfully!"};
+                return new ResponseModel { IsSuccess = true, Message = "Employee added successfully!"};
             }
             catch (Exception ex)
             {
@@ -51,7 +52,14 @@ namespace EmployeeMVC.Repository
                 sqlDataAdapter.Fill(dtblEmployees);
             }
 
-            return LoadToEmployeeClass(dtblEmployees).ToList();
+            var employees = ConvertDataTableToList<EmployeeModel>(dtblEmployees);
+
+            foreach (var employee in employees)
+            {
+                employee.Tasks = GetTasksByEmployee(employee.EmployeeId);
+            }
+
+            return employees;
         }
 
         public ResponseModel UpdateEmployee(EmployeeModel employee)
@@ -135,7 +143,8 @@ namespace EmployeeMVC.Repository
 
             if (dtEmployee.Rows.Count > 0)
             {
-                var employeeModel = LoadToEmployeeClass(dtEmployee);
+                var employeeModel = ConvertDataTableToList<EmployeeModel>(dtEmployee);
+
                 response.IsSuccess = true;
                 response.Result = employeeModel.ElementAt(0);
             }
@@ -147,9 +156,34 @@ namespace EmployeeMVC.Repository
 
         #region Tasks Methods
 
-        public ResponseModel InsertTask(TaskModel employee)
+        public ResponseModel InsertTask(TaskModel task)
         {
-            throw new NotImplementedException();
+            var response = new ResponseModel();
+
+            try
+            {
+                using (var sqlConnection = new SqlConnection(_connectionString))
+                {
+                    sqlConnection.Open();
+
+                    const string query = "INSERT INTO EmployeeTasks VALUES(@EmployeeId,@TaskDescription)";
+                    var sqlCommand = new SqlCommand(query, sqlConnection);
+                    sqlCommand.Parameters.AddWithValue("@EmployeeId", task.EmployeeId);
+                    sqlCommand.Parameters.AddWithValue("@TaskDescription", task.TaskDescription);
+                    sqlCommand.ExecuteNonQuery();
+                }
+
+                response.IsSuccess = true;
+                response.Message = "Task Created";
+            }
+            catch (Exception e)
+            {
+                response.IsSuccess = true;
+                response.Message = e.Message;
+            }
+
+
+            return response;
         }
 
         public List<TaskModel> GetTasks()
@@ -163,12 +197,36 @@ namespace EmployeeMVC.Repository
                 sqlDataAdapter.Fill(dtbTasks);
             }
 
-            return LoadToTaskClass(dtbTasks).ToList();
+            return ConvertDataTableToList<TaskModel>(dtbTasks);
         }
 
-        public ResponseModel UpdateTask(TaskModel employee)
+        public ResponseModel UpdateTask(TaskModel task)
         {
-            throw new NotImplementedException();
+            var response = new ResponseModel();
+
+            try
+            {
+                using (var sqlConnection = new SqlConnection(_connectionString))
+                {
+                    sqlConnection.Open();
+
+                    const string query = "UPDATE EmployeeTasks SET EmployeeId=@EmployeeId, TaskDescription=@TaskDescription WHERE TaskId=@TaskId";
+                    var sqlCommand = new SqlCommand(query, sqlConnection);
+                    sqlCommand.Parameters.AddWithValue("@EmployeeId", task.EmployeeId);
+                    sqlCommand.Parameters.AddWithValue("@TaskDescription", task.TaskDescription ?? string.Empty);
+                    sqlCommand.Parameters.AddWithValue("@TaskId", task.TaskId);
+                    sqlCommand.ExecuteNonQuery();
+                }
+                response.IsSuccess = true;
+                response.Message = "Task Edited.";
+            }
+            catch (Exception e)
+            {
+                response.IsSuccess = true;
+                response.Message = e.Message;
+            }
+
+            return response;
         }
 
         public ResponseModel DeleteTask(int employeeId)
@@ -178,56 +236,133 @@ namespace EmployeeMVC.Repository
 
         public ResponseModel GetTaskById(int employeeId)
         {
-            throw new NotImplementedException();
+            var response=new ResponseModel();
+
+            try
+            {
+                var dtEmployeeTask = new DataTable();
+
+                using (var sqlConnection = new SqlConnection(_connectionString))
+                {
+                    sqlConnection.Open();
+                    string query = "SELECT * FROM EmployeeTasks WHERE TaskId = @TaskId";
+                    SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(query, sqlConnection);
+                    sqlDataAdapter.SelectCommand.Parameters.AddWithValue("@TaskId", employeeId);
+                    sqlDataAdapter.Fill(dtEmployeeTask);
+                }
+
+                if (dtEmployeeTask.Rows.Count > 0)
+                {
+                    var employeeTaskModel = ConvertDataTableToList<TaskModel>(dtEmployeeTask);
+
+                    response.IsSuccess = true;
+                    response.Result = employeeTaskModel.ElementAt(0);
+                }
+
+            }
+            catch (Exception e)
+            {
+                response.IsSuccess = false;
+                response.Result = e.Message;
+            }
+
+            return response;
         }
 
         #endregion
 
         #region Private Methods
 
-
-        private static IEnumerable<EmployeeModel> LoadToEmployeeClass(DataTable dataTable)
+        private List<TaskModel> GetTasksByEmployee(int employeeId)
         {
-            var employeeList = new List<EmployeeModel>();
+            var dtTasks = new DataTable();
 
-            foreach (DataRow datarow in dataTable.Rows)
+            using (var sqlConnection = new SqlConnection(_connectionString))
             {
-                var employee = new EmployeeModel
-                {
-                    EmployeeId = Convert.ToInt32(datarow["EmployeeId"].ToString()),
-                    Name = datarow["Name"].ToString(),
-                    Position = datarow["Position"].ToString(),
-                    Office = datarow["Office"].ToString(),
-                    Salary = Convert.ToInt32(datarow["Salary"].ToString()),
-                    PicturePath = datarow["PicturePath"].ToString()
-                };
-                if (!string.IsNullOrEmpty(datarow["Salary"].ToString())) employee.Salary = Convert.ToInt32(datarow["Salary"].ToString());
-
-
-                employeeList.Add(employee);
+                sqlConnection.Open();
+                const string query = "SELECT * FROM EmployeeTasks WHERE EmployeeId = @EmployeeId";
+                var sqlDataAdapter = new SqlDataAdapter(query, sqlConnection);
+                sqlDataAdapter.SelectCommand.Parameters.AddWithValue("@EmployeeId", employeeId);
+                sqlDataAdapter.Fill(dtTasks);
             }
 
-            return employeeList;
+            return ConvertDataTableToList<TaskModel>(dtTasks);
         }
 
-        private static IEnumerable<TaskModel> LoadToTaskClass(DataTable dataTable)
+        private static List<T> ConvertDataTableToList<T>(DataTable dt)
         {
-            var taskList = new List<TaskModel>();
-
-            foreach (DataRow datarow in dataTable.Rows)
+            List<T> data = new List<T>();
+            foreach (DataRow row in dt.Rows)
             {
-                var task = new TaskModel
-                {
-                    EmployeeId = Convert.ToInt32(datarow["EmployeeId"].ToString()),
-                    TaskId = Convert.ToInt32(datarow["TaskId"]),
-                    TaskDescription = datarow["TaskDescription"].ToString()
-                };
-
-
-                taskList.Add(task);
+                T item = GetItem<T>(row);
+                data.Add(item);
             }
+            return data;
+        }
 
-            return taskList;
+        private static T GetItem<T>(DataRow dr)
+        {
+            Type temp = typeof(T);
+            T obj = Activator.CreateInstance<T>();
+
+            foreach (DataColumn column in dr.Table.Columns)
+            {
+                foreach (PropertyInfo pro in temp.GetProperties())
+                {
+                    //in case you have a enum/GUID datatype in your model
+                    //We will check field's dataType, and convert the value in it.
+                    if (pro.Name == column.ColumnName)
+                    {
+                        try
+                        {
+                            var convertedValue = GetValueByDataType(pro.PropertyType, dr[column.ColumnName]);
+                            pro.SetValue(obj, convertedValue, null);
+                        }
+                        catch (Exception e)
+                        {
+                            //ex handle code                   
+                            throw;
+                        }
+                        //pro.SetValue(obj, dr[column.ColumnName], null);
+                    }
+                    else
+                        continue;
+                }
+            }
+            return obj;
+        }
+
+        private static object GetValueByDataType(Type propertyType, object o)
+        {
+            if (o.ToString() == "null")
+            {
+                return null;
+            }
+            if (propertyType == (typeof(Guid)) || propertyType == typeof(Guid?))
+            {
+                return Guid.Parse(o.ToString());
+            }
+            else if (propertyType == typeof(int) || propertyType.IsEnum || propertyType == typeof(int?))
+            {
+                return Convert.ToInt32(o);
+            }
+            else if (propertyType == typeof(decimal))
+            {
+                return Convert.ToDecimal(o);
+            }
+            else if (propertyType == typeof(long))
+            {
+                return Convert.ToInt64(o);
+            }
+            else if (propertyType == typeof(bool) || propertyType == typeof(bool?))
+            {
+                return Convert.ToBoolean(o);
+            }
+            else if (propertyType == typeof(DateTime) || propertyType == typeof(DateTime?))
+            {
+                return Convert.ToDateTime(o);
+            }
+            return o.ToString();
         }
 
         #endregion

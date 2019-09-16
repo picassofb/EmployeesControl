@@ -1,4 +1,4 @@
-﻿@model System.Data.DataTable
+﻿@model List<EmployeeMVC.Models.EmployeeModel>
 
 @{
     ViewBag.Title = "Index";
@@ -22,20 +22,22 @@
         <th></th>
     </tr>
 
-@for(int i = 0; i < Model.Rows.Count; i++) {
-    <tr>
-        <td>
-            @Model.Rows[i][2]
-        </td>
-        <td>
-            @Model.Rows[i][3]
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id= @Model.Rows[i][0] }, new{@class= "btn btn-info btn-sm" }) 
-            @*@Html.ActionLink("Details", "Details", new { id= @Model.Rows[i][0] }) |
-            @Html.ActionLink("Delete", "Delete", new { id= @Model.Rows[i][0] })*@
-        </td>
-    </tr>
+@foreach(var employee in Model)
+{
+    foreach (var taskOfEmployee in employee.Tasks)
+    {
+        <tr>
+            <td>
+                @employee.Name
+            </td>
+            <td>
+                @taskOfEmployee.TaskDescription
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id= @taskOfEmployee.TaskId }, new{@class= "btn btn-info btn-sm" }) 
+            </td>
+        </tr>
+    }
 }
 
 </table>

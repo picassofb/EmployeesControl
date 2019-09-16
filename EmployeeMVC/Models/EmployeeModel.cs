@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc.Html;
 
@@ -21,10 +22,10 @@ namespace EmployeeMVC.Models
         public string Position { get; set; }
         public string Office { get; set; }
         public int? Salary { get; set; }
+        public List<TaskModel> Tasks { get; set; }
 
         [DisplayName("Picture")]
         public string PicturePath { get; set; }
-
         [NotMapped]
         public HttpPostedFileBase PictureUpload { get; set; }
 
